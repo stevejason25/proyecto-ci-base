@@ -1,0 +1,208 @@
+
+     BITÁCORA DE PREPARACIÓN DE INFRAESTRUCTURA
+
+Nombre    : STEVE JASON SIRPA ESCALERA
+
+Repo     : https://github.com/stevejason25/proyecto-ci-base.git
+
+
+PASO 1 — INSTALACIÓN DE HERRAMIENTAS BASE
+
+Se instalaron las siguientes herramientas en el sistema operativo
+Windows, como base para el entorno de desarrollo:
+
+NVM (Node Version Manager)
+     - Permite gestionar múltiples versiones de Node.js
+     - Comando verificación: nvm --version
+
+Node.js LTS (via NVM)
+     - Se instaló la versión LTS más reciente
+     - Comando verificación: node --version
+
+npm (Node Package Manager)
+     - Se instala automáticamente con Node.js
+     - Comando verificación: npm --version
+
+Git
+     - Sistema de control de versiones
+     - Fuente: https://git-scm.com/
+     - Comando verificación: git --version
+
+Docker
+     - Plataforma de contenedores
+     - Fuente: https://www.docker.com/
+     - Comando verificación: docker --version
+
+Visual Studio Code
+     - Editor de código fuente principal
+     - Fuente: https://code.visualstudio.com/
+
+
+PASO 2 — EXTENSIONES INSTALADAS EN VS CODE
+
+Se instalaron las siguientes extensiones en Visual Studio Code
+para cubrir los requerimientos del documento de referencia:
+
+ESLint          
+Prettier        
+SonarQube       
+Jest Runner     
+Error Lens     
+GitLens         
+Docker         
+
+
+PASO 3 — CREACIÓN DEL REPOSITORIO EN GITHUB
+
+Repositorio creado en GitHub:
+     https://github.com/stevejason25/proyecto-ci-base.git
+
+Repositorio clonado localmente:
+     git clone https://github.com/stevejason25/proyecto-ci-base.git
+
+Proyecto Node.js inicializado:
+     npm init -y
+
+
+PASO 4 — INSTALACIÓN DE DEPENDENCIAS
+
+Se instalaron las dependencias de desarrollo requeridas:
+
+TypeScript y tipos base:
+     npm install --save-dev typescript @types/node ts-node
+
+ESLint v8 con soporte TypeScript:
+     npm install --save-dev eslint@8 @typescript-eslint/parser@6
+     @typescript-eslint/eslint-plugin@6 eslint-config-prettier
+     eslint-plugin-prettier eslint-plugin-import
+
+Prettier (formato de código):
+     Incluido en el paso anterior
+
+Husky y lint-staged (hooks de Git):
+     npm install --save-dev husky lint-staged
+
+Jest para pruebas unitarias (TDD):
+     npm install --save-dev jest @types/jest ts-jest
+
+PROBLEMA ENCONTRADO (PASO 4):
+     ESLint v9 (instalado por defecto) usa un nuevo formato de
+     configuración incompatible con .eslintrc.json del documento.
+     SOLUCIÓN: Se degradó ESLint a v8 para mantener compatibilidad
+     con el formato de configuración requerido.
+
+
+PASO 5 — ARCHIVOS DE CONFIGURACIÓN CREADOS
+
+.prettierrc
+     Configuración de formato automático de código:
+     - printWidth: 90 caracteres por línea
+     - tabWidth: 2 espacios
+     - singleQuote: comillas simples
+     - trailingComma: coma final en todos los casos
+     - endOfLine: lf (saltos de línea Unix)
+
+.eslintrc.json
+     Configuración de estándares de codificación TypeScript:
+     - Parser: @typescript-eslint/parser
+     - Extiende: eslint:recommended + @typescript-eslint/recommended
+     - Reglas: no-explicit-any, no-unused-vars, import/order
+     - ignorePatterns: jest.config.js (archivos de configuración JS)
+     - Override para archivos .test.ts sin project TypeScript
+
+tsconfig.json
+     Configuración del compilador TypeScript:
+     - target: ES2020
+     - strict: true 
+     - outDir: ./dist 
+     - rootDir: ./src 
+     - types: ["jest", "node"]
+     - allowJs: true
+
+jest.config.js
+     Configuración de pruebas unitarias:
+     - preset: ts-jest
+     - testEnvironment: node
+     - testMatch: archivos .test.ts
+
+.gitignore
+     Archivos ignorados por Git:
+     node_modules/, dist/, .env, *.log, coverage/
+
+
+PASO 6 — ACTUALIZACIÓN DE package.json
+
+Configuración lint-staged:
+     Solo archivos .ts son procesados por ESLint y Prettier
+     en cada commit. Archivos JSON y MD solo usan Prettier.
+
+
+PASO 7 — CÓDIGO FUENTE DE EJEMPLO
+
+src/index.ts
+     Función exportada: saludo(nombre: string): string
+     Retorna un mensaje de saludo personalizado.
+
+src/__tests__/index.test.ts
+     Suite de prueba con Jest:
+     - Verifica que saludo('Mundo') retorne 'Hola, Mundo!'
+     - Prueba unitaria básica para validar el flujo TDD
+
+
+PASO 8 — CONFIGURACIÓN DE HUSKY
+
+Husky inicializado:
+     npx husky-init && npm install
+
+Hook pre-commit configurado (.husky/pre-commit):
+     Ejecuta lint-staged antes de cada commit.
+     Si ESLint o Prettier fallan, el commit es bloqueado.
+
+Hook pre-push configurado (.husky/pre-push):
+     Ejecuta npm test antes de cada push.
+     Si los tests fallan, el push es bloqueado.
+
+PROBLEMA ENCONTRADO (PASO 8):
+     Al hacer push, TypeScript no reconocía describe/it/expect
+     de Jest porque faltaban los tipos en tsconfig.json.
+     SOLUCIÓN: Se agregó "types": ["jest", "node"] en tsconfig.json
+     y se verificó que @types/jest estuviera instalado.
+
+PASO 9 — GITHUB ACTIONS
+
+Archivo creado: .github/workflows/ci.yml
+
+
+PROBLEMAS ENCONTRADOS Y SOLUCIONES
+
+
+PROBLEMA 1:
+  ESLint v9 no reconoce el formato .eslintrc.json
+  ERROR: "ESLint couldn't find an eslint.config.(js|mjs|cjs) file"
+  CAUSA: ESLint v9 cambió el formato de configuración por defecto
+  SOLUCIÓN: Degradar ESLint a v8 con:
+            npm uninstall eslint
+            npm install --save-dev eslint@8 ...
+
+PROBLEMA 2:
+  ESLint intentaba analizar jest.config.js con tsconfig.json
+  ERROR: "TSConfig does not include this file"
+  CAUSA: parserOptions.project aplica a todos los archivos .js
+  SOLUCIÓN: Agregar "ignorePatterns": ["jest.config.js"] en
+            .eslintrc.json y override para archivos .test.ts
+
+PROBLEMA 3:
+  TypeScript no reconoce describe/it/expect en archivos de test
+  ERROR: "Cannot find name 'describe'. TS2593"
+  CAUSA: tsconfig.json no incluía los tipos de Jest
+  SOLUCIÓN: Agregar "types": ["jest", "node"] en tsconfig.json
+
+RESULTADO FINAL
+Infraestructura base completamente configurada
+Todos los hooks de Husky funcionando correctamente
+Pipeline de GitHub Actions operativo
+Tests unitarios pasando correctamente
+Commit y push exitosos al repositorio remoto
+
+URL DEL REPOSITORIO:
+https://github.com/stevejason25/proyecto-ci-base.git
